@@ -13,12 +13,12 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
 
-HEIGHT = 900
-WIDTH = 500
+HEIGHT = 500
+WIDTH = 900
 
-BORDER = pygame.Rect(445, 0, 10, HEIGHT)
+BORDER = pygame.Rect(WIDTH//2, 0, 10, HEIGHT)
 
-screen = pygame.display.set_mode((HEIGHT, WIDTH))
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Space shooter")
 
 SPACESHIP_HEIGHT = 55
@@ -27,7 +27,7 @@ SPACESHIP_WIDTH = 40
 YELLOW_HIT = pygame.USEREVENT + 1
 RED_HIT = pygame.USEREVENT + 2
 
-BG = pygame.image.load('Assets/space.png')
+BG = pygame.transform.scale(pygame.image.load('Assets/space.png'), (WIDTH, HEIGHT))
 RED_SPACESHIP_IMG = pygame.image.load('Assets/spaceship_red.png')
 RED_SPACESHIP = pygame.transform.rotate(pygame.transform.scale(RED_SPACESHIP_IMG, (SPACESHIP_HEIGHT, SPACESHIP_WIDTH)),
                                         270)
@@ -58,18 +58,18 @@ def yellow_movement(keys_pressed, yellow):
         yellow.x += VEL
     if keys_pressed[pygame.K_w] and yellow.y - VEL > 0:
         yellow.y -= VEL
-    if keys_pressed[pygame.K_s] and yellow.y + VEL + yellow.height < HEIGHT - 400:
+    if keys_pressed[pygame.K_s] and yellow.y + VEL + yellow.height < HEIGHT:
         yellow.y += VEL
 
 
 def red_movement(keys_pressed, red):
     if keys_pressed[pygame.K_LEFT] and red.x - VEL > BORDER.x + BORDER.width:
         red.x -= VEL
-    if keys_pressed[pygame.K_RIGHT] and red.x + VEL + red.width < 900:
+    if keys_pressed[pygame.K_RIGHT] and red.x + VEL + red.width < WIDTH:
         red.x += VEL
     if keys_pressed[pygame.K_UP] and red.y - VEL > 0:
         red.y -= VEL
-    if keys_pressed[pygame.K_DOWN] and red.y + VEL + red.height < HEIGHT - 400:
+    if keys_pressed[pygame.K_DOWN] and red.y + VEL + red.height < HEIGHT:
         red.y += VEL
 
 
@@ -79,11 +79,15 @@ def handle_bullets(yellow_bullets, red_bullets, yellow, red):
         if red.colliderect(bullet):
             pygame.event.post(pygame.event.Event(RED_HIT))
             yellow_bullets.remove(bullet)
+        elif bullet.x > 900:
+            yellow_bullets.remove(bullet)
 
     for bullet in red_bullets:
         bullet.x -= BULLET_VEL
         if yellow.colliderect(bullet):
             pygame.event.post(pygame.event.Event(YELLOW_HIT))
+            red_bullets.remove(bullet)
+        elif bullet.x < 0:
             red_bullets.remove(bullet)
 
 
@@ -112,7 +116,6 @@ def main():
                     bullet = pygame.Rect(red.x, red.y + red.height // 2 - 2, 10, 5)
                     red_bullets.append(bullet)
 
-        print(red_bullets, yellow_bullets)
         keys_pressed = pygame.key.get_pressed()
         yellow_movement(keys_pressed, yellow)
         red_movement(keys_pressed, red)
